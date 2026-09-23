@@ -317,6 +317,13 @@
             margin-top: 8px;
         }
 
+        .lock {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            font-size: 1rem;
+        }
+
         /* ===== ROOM view ===== */
         #roomView {
             display: none;
@@ -572,25 +579,6 @@
             font-size: .95rem;
             min-height: 46px;
         }
-
-        /* ===== RESPONSIVE ===== */
-        @media(max-width:600px) {
-            html {
-                font-size: 15px;
-            }
-
-            .rooms {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-
-            .admin-row select,
-            .admin-row input,
-            .btn-add {
-                width: 100%;
-                flex: none;
-            }
-        }
     </style>
     <base target="_blank">
 </head>
@@ -608,7 +596,7 @@
                 <button class="btn-head btn-refresh" onclick="pull(true)">🔄</button>
                 <button class="btn-head btn-back" id="btnBack" style="display:none" onclick="goHome()">← Wapis</button>
                 <button class="btn-head btn-newweek" id="btnNewWeek" onclick="newWeek()">Naya Week</button>
-                <button class="btn-head btn-admin" id="btnAdmin" onclick="toggleAdmin()">🛠️ Admin</button>
+                <button class="btn-head btn-admin" id="btnAdmin" onclick="toggleAdmin()">🔐 Admin</button>
             </div>
         </div>
     </header>
@@ -640,7 +628,7 @@
         <!-- Week banner -->
         <div class="week-banner">
             <h2>📅 Week: <span id="weekRange"></span></h2>
-            <p>Apne name par click karein — aapka room khul jayega</p>
+            <p>Apne name par click karein — password daalein — aapka room khul jayega 🔒</p>
         </div>
 
         <!-- HOME: Rooms -->
@@ -688,6 +676,15 @@
     </div>
 
     <script>
+        /* ================= PASSWORDS (yahan se change kar sakte hain) ================= */
+        const PASSWORDS = {
+            admin: "admin123",
+            Bilal: "bilal123",
+            Yasir: "yasir123",
+            Basit: "basit123",
+            Nehal: "nehal123"
+        };
+
         /* ================= SYNC (JSONBlob - free, no signup) ================= */
         const API = "https://jsonblob.com/api/jsonBlob";
         const LS_KEY = "tt_tasks_v4";
@@ -727,11 +724,12 @@
         let tasks = [];
         let blobId = new URLSearchParams(location.search).get("team") || localStorage.getItem("tt_blob_id") || "";
         let isAdmin = false;
+        let adminUnlocked = false;
+        const unlockedRooms = {};
         let modalTaskId = null;
         let currentRoom = null;
 
         if (weekStart !== currentMonday()) {
-            // Naya Monday shuru — purana week khatam
             weekStart = currentMonday();
             tasks = [];
         } else {
@@ -773,7 +771,6 @@
                 const data = await res.json();
                 if (data && Array.isArray(data.tasks)) {
                     if (data.week !== currentMonday()) {
-                        // Server par purana week — Monday ka naya week shuru karo
                         tasks = []; weekStart = currentMonday();
                         localStorage.setItem(LS_WEEK, weekStart);
                         push();
@@ -815,7 +812,6 @@
         }
 
         function render() {
-            // Week range: Monday → next Monday
             const m1 = new Date(weekStart + "T00:00:00");
             const m2 = new Date(nextMondayStr(weekStart) + "T00:00:00");
             const fmt = d => d.toLocaleDateString("en-GB", { day: 'numeric', month: 'short' });
@@ -829,14 +825,15 @@
                 const pending = s.total - s.done;
                 const card = document.createElement("div");
                 card.className = "room-card";
-                card.onclick = () => openRoom(m.name);
+                card.onclick = () => tryOpenRoom(m.name);
                 card.innerHTML = `
+      <span class="lock">${unlockedRooms[m.name] ? "🔓" : "🔒"}</span>
       <div class="avatar" style="background:${m.color}">${m.name[0]}</div>
       <h3>${m.name}</h3>
       <div class="pending">${pending} pending task${pending === 1 ? "" : "s"}</div>
       <div class="mini-bar"><div class="mini-fill" style="width:${s.pct}%;background:${m.color}"></div></div>
       <div class="mini-pct" style="color:${m.color}">${s.pct}% complete (${s.done}/${s.total})</div>
-      <div class="enter">Room kholne ke liye click karein →</div>`;
+      <div class="enter">${unlockedRooms[m.name] ? "Room khula hai — click karein" : "Password daalein — click karein"} →</div>`;
                 rooms.appendChild(card);
             });
 
@@ -856,7 +853,7 @@
 
                 const list = document.getElementById("roomTasks");
                 list.innerHTML = "";
-                if (mine.length === 0) list.innerHTML = '<div class="empty">🎉 Koi pending task nahi — sab complete!</div>';
+                if (mine.length === 0 && myDone.length === 0) list.innerHTML = '<div class="empty">Is week abhi koi task nahi</div>';
                 mine.forEach(t => {
                     const el = document.createElement("div");
                     el.className = "task";
@@ -874,7 +871,6 @@
                     }
                     list.appendChild(el);
                 });
-                // Mere complete tasks bhi room mein dikhao
                 myDone.forEach(t => {
                     const el = document.createElement("div");
                     el.className = "task";
@@ -897,7 +893,16 @@
             } else sec.style.display = "none";
         }
 
-        /* ===== Room navigation ===== */
+        /* ===== Room navigation (password ke sath) ===== */
+        function tryOpenRoom(name) {
+            if (!unlockedRooms[name]) {
+                const p = prompt(name + " ka room 🔒\nPassword daalein:");
+                if (p === null) return;
+                if (p !== PASSWORDS[name]) { alert("❌ Galat password!"); return; }
+                unlockedRooms[name] = true;
+            }
+            openRoom(name);
+        }
         function openRoom(name) {
             currentRoom = name;
             document.getElementById("homeView").style.display = "none";
@@ -914,14 +919,27 @@
             render();
         }
 
-        /* ================= Admin (bina password) ================= */
+        /* ================= Admin (password protected) ================= */
         function toggleAdmin() {
-            isAdmin = !isAdmin;
-            document.getElementById("adminPanel").style.display = isAdmin ? "block" : "none";
-            document.getElementById("btnNewWeek").style.display = isAdmin ? "inline-block" : "none";
-            document.getElementById("btnAdmin").textContent = isAdmin ? "❌ Close" : "🛠️ Admin";
-            document.getElementById("btnAdmin").classList.toggle("on", isAdmin);
-            if (isAdmin) document.getElementById("teamLink").textContent = teamUrl();
+            if (isAdmin) {
+                isAdmin = false;
+                document.getElementById("adminPanel").style.display = "none";
+                document.getElementById("btnNewWeek").style.display = "none";
+                document.getElementById("btnAdmin").textContent = "🔐 Admin";
+                document.getElementById("btnAdmin").classList.remove("on");
+                render();
+                return;
+            }
+            let p = adminUnlocked ? "ok" : prompt("🔐 Admin password daalein:");
+            if (p === null) return;
+            if (!adminUnlocked && p !== PASSWORDS.admin) { alert("❌ Galat password!"); return; }
+            adminUnlocked = true;
+            isAdmin = true;
+            document.getElementById("adminPanel").style.display = "block";
+            document.getElementById("btnNewWeek").style.display = "inline-block";
+            document.getElementById("btnAdmin").textContent = "❌ Close";
+            document.getElementById("btnAdmin").classList.add("on");
+            document.getElementById("teamLink").textContent = teamUrl();
             render();
         }
 
