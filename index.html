@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ur">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>Team Weekly Tasks</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-bottom: 1px solid #334155;
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            color: #f8fafc;
+            white-space: nowrap;
+        }
+
+        header h1 span {
+            color: #38bdf8;
+        }
+
+        .week-label {
+            font-size: .75rem;
+            color: #94a3b8;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dot.g {
+            background: #22c55e;
+        }
+
+        .dot.y {
+            background: #f59e0b;
+        }
+
+        .dot.r {
+            background: #ef4444;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+        .btn-head {
+            padding: 9px 14px;
+            font-size: .85rem;
+        }
+
+        .btn-admin {
+            background: #38bdf8;
+            color: #082f49;
+        }
+
+        .btn-admin.on {
+            background: #f59e0b;
+            color: #451a03;
+        }
+
+        .btn-newweek {
+            background: #8b5cf6;
+            color: #f5f3ff;
+            display: none;
+        }
+
+        .btn-refresh {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        .btn-back {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 14px 60px;
+        }
+
+        /* Admin panel */
+        #adminPanel {
+            display: none;
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 22px;
+        }
+
+        #adminPanel h2 {
+            font-size: .95rem;
+            margin-bottom: 12px;
+            color: #38bdf8;
+        }
+
+        .admin-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .admin-row select,
+        .admin-row input {
+            background: #0f172a;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 11px 12px;
+            font-size: .95rem;
+            font-family: inherit;
+            min-height: 44px;
+        }
+
+        .admin-row select {
+            min-width: 130px;
+            flex: 1;
+        }
+
+        .admin-row input {
+            flex: 3;
+            min-width: 180px;
+        }
+
+        .btn-add {
+            background: #22c55e;
+            color: #052e16;
+            padding: 11px 22px;
+            min-height: 44px;
+            font-size: .95rem;
+        }
+
+        .link-row {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .link-row code {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: .72rem;
+            color: #94a3b8;
+            word-break: break-all;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .btn-copy {
+            background: #0ea5e9;
+            color: #082f49;
+            padding: 9px 16px;
+            font-size: .85rem;
+        }
+
+        .admin-note {
+            font-size: .75rem;
+            color: #94a3b8;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+
+        /* Week banner */
+        .week-banner {
+            background: linear-gradient(135deg, #1e3a8a33, #0f172a);
+            border: 1px solid #1e40af66;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .week-banner h2 {
+            font-size: 1rem;
+            color: #93c5fd;
+        }
+
+        .week-banner p {
+            font-size: .8rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* ===== HOME: name cards (rooms) ===== */
+        .rooms {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .room-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 20px 16px;
+            cursor: pointer;
+            transition: .2s;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .room-card:hover,
+        .room-card:active {
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+        }
+
+        .room-card .avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #fff;
+            font-size: 1.4rem;
+            margin: 0 auto 10px;
+        }
+
+        .room-card h3 {
+            font-size: 1.1rem;
+            color: #f8fafc;
+        }
+
+        .room-card .pending {
+            font-size: .78rem;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+
+        .mini-bar {
+            background: #0f172a;
+            border-radius: 12px;
+            height: 10px;
+            margin-top: 12px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+
+        .mini-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width .6s ease;
+        }
+
+        .mini-pct {
+            font-size: .78rem;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .enter {
+            font-size: .72rem;
+            color: #38bdf8;
+            margin-top: 8px;
+        }
+
+        /* ===== ROOM view ===== */
+        #roomView {
+            display: none;
+        }
+
+        .room-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .room-header .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #fff;
+            font-size: 1.15rem;
+        }
+
+        .room-header h2 {
+            font-size: 1.2rem;
+        }
+
+        .room-header .sub {
+            font-size: .78rem;
+            color: #94a3b8;
+        }
+
+        .room-stats {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .room-stats .pct-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: .85rem;
+            margin-bottom: 8px;
+        }
+
+        .room-stats .pct-row b {
+            color: #38bdf8;
+        }
+
+        .bar-wrap {
+            background: #0f172a;
+            border-radius: 20px;
+            height: 24px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+
+        .bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #38bdf8, #22c55e);
+            border-radius: 20px;
+            transition: width .8s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .72rem;
+            font-weight: 700;
+            color: #082f49;
+            min-width: 44px;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .task {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 14px 38px 14px 14px;
+            font-size: .92rem;
+            cursor: pointer;
+            transition: .15s;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .task:hover,
+        .task:active {
+            border-color: #38bdf8;
+        }
+
+        .task small {
+            display: block;
+            color: #64748b;
+            font-size: .72rem;
+            margin-top: 5px;
+        }
+
+        .task .mini {
+            position: absolute;
+            top: 10px;
+            right: 8px;
+            background: none;
+            color: #64748b;
+            font-size: .85rem;
+            padding: 4px 6px;
+        }
+
+        .task .mini:hover {
+            color: #e2e8f0;
+        }
+
+        .empty {
+            color: #475569;
+            font-size: .85rem;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        /* Completed feed */
+        #doneSection {
+            margin-top: 26px;
+            background: #14532d33;
+            border: 1px solid #166534;
+            border-radius: 14px;
+            padding: 16px;
+            display: none;
+        }
+
+        #doneSection h2 {
+            color: #4ade80;
+            font-size: .95rem;
+            margin-bottom: 10px;
+        }
+
+        .done-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .done-item {
+            font-size: .82rem;
+            color: #bbf7d0;
+            background: #052e16;
+            border: 1px solid #166534;
+            border-radius: 8px;
+            padding: 9px 12px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .done-item b {
+            color: #4ade80;
+        }
+
+        .done-item .msg {
+            color: #86efac;
+            font-size: .75rem;
+        }
+
+        /* Modal */
+        #modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000000bb;
+            z-index: 100;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        @media(min-width:480px) {
+            #modal {
+                align-items: center;
+                padding: 16px;
+            }
+        }
+
+        #modal .box {
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 16px 16px 0 0;
+            padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+            width: 100%;
+            max-width: 440px;
+        }
+
+        @media(min-width:480px) {
+            #modal .box {
+                border-radius: 14px;
+            }
+        }
+
+        #modal h3 {
+            font-size: .95rem;
+            margin-bottom: 8px;
+            color: #38bdf8;
+        }
+
+        #modalTaskText {
+            font-size: .85rem;
+            color: #cbd5e1;
+            background: #0f172a;
+            padding: 11px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #334155;
+            line-height: 1.5;
+        }
+
+        #modal textarea {
+            width: 100%;
+            min-height: 90px;
+            background: #0f172a;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 11px;
+            font-size: .92rem;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .btn-submit {
+            flex: 1;
+            background: #22c55e;
+            color: #052e16;
+            padding: 12px;
+            font-size: .95rem;
+            min-height: 46px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: #475569;
+            color: #e2e8f0;
+            padding: 12px;
+            font-size: .95rem;
+            min-height: 46px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media(max-width:600px) {
+            html {
+                font-size: 15px;
+            }
+
+            .rooms {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .admin-row select,
+            .admin-row input,
+            .btn-add {
+                width: 100%;
+                flex: none;
+            }
+        }
+    </style>
+    <base target="_blank">
+</head>
+
+<body>
+
+    <header>
+        <div class="header-inner">
+            <div>
+                <h1>⚡ <span>Team Tasks</span></h1>
+                <div class="week-label"><span class="dot y" id="syncDot"></span><span id="syncText">Connecting...</span>
+                </div>
+            </div>
+            <div class="header-btns">
+                <button class="btn-head btn-refresh" onclick="pull(true)">🔄</button>
+                <button class="btn-head btn-back" id="btnBack" style="display:none" onclick="goHome()">← Wapis</button>
+                <button class="btn-head btn-newweek" id="btnNewWeek" onclick="newWeek()">Naya Week</button>
+                <button class="btn-head btn-admin" id="btnAdmin" onclick="toggleAdmin()">🛠️ Admin</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Admin Panel -->
+        <div id="adminPanel">
+            <h2>🛠️ Admin Panel — Tasks Manage Karein</h2>
+            <div class="admin-row">
+                <select id="selMember">
+                    <option value="Bilal">Bilal</option>
+                    <option value="Yasir">Yasir</option>
+                    <option value="Basit">Basit</option>
+                    <option value="Nehal">Nehal</option>
+                </select>
+                <input type="text" id="inpTask" placeholder="Naya task likhein..."
+                    onkeydown="if(event.key==='Enter')addTask()">
+                <button class="btn-add" onclick="addTask()">Add Task</button>
+            </div>
+            <div class="link-row">
+                <code id="teamLink">...</code>
+                <button class="btn-copy" onclick="copyLink()">📋 Copy Link</button>
+            </div>
+            <p class="admin-note">⬆️ Ye link team ko WhatsApp par bhejein — is link se kholne par sab devices par same
+                tasks dikhenge. Task par ✎ edit, ✕ delete. Har Monday tasks khud reset ho jate hain (Monday → Monday
+                week).</p>
+        </div>
+
+        <!-- Week banner -->
+        <div class="week-banner">
+            <h2>📅 Week: <span id="weekRange"></span></h2>
+            <p>Apne name par click karein — aapka room khul jayega</p>
+        </div>
+
+        <!-- HOME: Rooms -->
+        <div id="homeView">
+            <div class="rooms" id="rooms"></div>
+        </div>
+
+        <!-- ROOM -->
+        <div id="roomView">
+            <div class="room-header">
+                <div class="avatar" id="roomAvatar"></div>
+                <div>
+                    <h2 id="roomName"></h2>
+                    <div class="sub" id="roomSub"></div>
+                </div>
+            </div>
+            <div class="room-stats">
+                <div class="pct-row"><span>Meri weekly progress</span><b id="roomPctText"></b></div>
+                <div class="bar-wrap">
+                    <div class="bar" id="roomBar">0%</div>
+                </div>
+            </div>
+            <div class="task-list" id="roomTasks"></div>
+        </div>
+
+        <!-- Completed feed -->
+        <div id="doneSection">
+            <h2>✅ Weekly Tasks — Submissions (Is Week)</h2>
+            <div class="done-list" id="doneList"></div>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div id="modal" onclick="if(event.target===this)closeModal()">
+        <div class="box">
+            <h3>Task Complete? ✅</h3>
+            <div id="modalTaskText"></div>
+            <textarea id="modalMsg"
+                placeholder="Apna message likhein... (e.g. Ye task tha, maine complete kar liya hai)"></textarea>
+            <div class="modal-btns">
+                <button class="btn-submit" onclick="submitComplete()">Submit ✔</button>
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ================= SYNC (JSONBlob - free, no signup) ================= */
+        const API = "https://jsonblob.com/api/jsonBlob";
+        const LS_KEY = "tt_tasks_v4";
+        const LS_WEEK = "tt_week_v4";
+
+        const DEFAULT_TASKS = [
+            { id: 1, member: "Bilal", text: "Website ka homepage design karo", status: "pending", doneMsg: "", doneAt: "" },
+            { id: 2, member: "Bilal", text: "Client ko email ka reply do", status: "pending", doneMsg: "", doneAt: "" },
+            { id: 3, member: "Yasir", text: "Social media posts schedule karo", status: "pending", doneMsg: "", doneAt: "" },
+            { id: 4, member: "Yasir", text: "Report prepare karo (Friday tak)", status: "pending", doneMsg: "", doneAt: "" },
+            { id: 5, member: "Basit", text: "Data entry ka kaam complete karo", status: "pending", doneMsg: "", doneAt: "" },
+            { id: 6, member: "Nehal", text: "Content writing — 2 blogs", status: "pending", doneMsg: "", doneAt: "" },
+            { id: 7, member: "Nehal", text: "Team meeting ka agenda banao", status: "pending", doneMsg: "", doneAt: "" }
+        ];
+
+        const MEMBERS = [
+            { name: "Bilal", color: "#38bdf8" },
+            { name: "Yasir", color: "#f59e0b" },
+            { name: "Basit", color: "#22c55e" },
+            { name: "Nehal", color: "#e879f9" }
+        ];
+
+        /* ===== Monday → Monday week ===== */
+        function currentMonday() {
+            const d = new Date();
+            const day = (d.getDay() + 6) % 7; // Monday = 0
+            d.setDate(d.getDate() - day);
+            return d.toISOString().slice(0, 10);
+        }
+        function nextMondayStr(mondayStr) {
+            const d = new Date(mondayStr + "T00:00:00");
+            d.setDate(d.getDate() + 7);
+            return d.toISOString().slice(0, 10);
+        }
+
+        let weekStart = localStorage.getItem(LS_WEEK) || "";
+        let tasks = [];
+        let blobId = new URLSearchParams(location.search).get("team") || localStorage.getItem("tt_blob_id") || "";
+        let isAdmin = false;
+        let modalTaskId = null;
+        let currentRoom = null;
+
+        if (weekStart !== currentMonday()) {
+            // Naya Monday shuru — purana week khatam
+            weekStart = currentMonday();
+            tasks = [];
+        } else {
+            tasks = JSON.parse(localStorage.getItem(LS_KEY) || "null") || DEFAULT_TASKS;
+        }
+        localStorage.setItem(LS_WEEK, weekStart);
+        localStorage.setItem(LS_KEY, JSON.stringify(tasks));
+
+        function setSync(s, txt) {
+            document.getElementById("syncDot").className = "dot " + s;
+            document.getElementById("syncText").textContent = txt;
+        }
+
+        function teamUrl() {
+            return location.protocol === "file:"
+                ? location.href.split("?")[0] + "?team=" + blobId
+                : location.origin + location.pathname + "?team=" + blobId;
+        }
+
+        async function ensureBlob() {
+            if (blobId) return;
+            setSync("y", "Sync setup ho raha hai...");
+            const res = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify({ week: weekStart, tasks }) });
+            const loc = res.headers.get("Location") || "";
+            blobId = loc.split("/").filter(Boolean).pop();
+            if (!blobId) throw new Error("no id");
+            localStorage.setItem("tt_blob_id", blobId);
+            history.replaceState(null, "", "?team=" + blobId);
+            document.getElementById("teamLink").textContent = teamUrl();
+        }
+
+        async function pull(manual) {
+            try {
+                if (manual) setSync("y", "La rahe hain...");
+                await ensureBlob();
+                const res = await fetch(API + "/" + blobId, { headers: { "Accept": "application/json" } });
+                if (res.status === 404) { blobId = ""; localStorage.removeItem("tt_blob_id"); await ensureBlob(); return; }
+                if (!res.ok) throw new Error("http " + res.status);
+                const data = await res.json();
+                if (data && Array.isArray(data.tasks)) {
+                    if (data.week !== currentMonday()) {
+                        // Server par purana week — Monday ka naya week shuru karo
+                        tasks = []; weekStart = currentMonday();
+                        localStorage.setItem(LS_WEEK, weekStart);
+                        push();
+                    } else {
+                        tasks = data.tasks;
+                    }
+                    localStorage.setItem(LS_KEY, JSON.stringify(tasks));
+                }
+                setSync("g", "Synced ✓");
+                render();
+            } catch (e) {
+                setSync("r", "Offline — sirf is device ka data");
+                render();
+            }
+        }
+
+        let pushTimer = null;
+        function push() {
+            localStorage.setItem(LS_KEY, JSON.stringify(tasks));
+            render();
+            clearTimeout(pushTimer);
+            pushTimer = setTimeout(async () => {
+                if (!blobId) return;
+                try {
+                    setSync("y", "Sync ho raha hai...");
+                    await fetch(API + "/" + blobId, { method: "PUT", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify({ week: weekStart, tasks }) });
+                    setSync("g", "Synced ✓");
+                } catch (e) { setSync("r", "Sync fail — phir try karein"); }
+            }, 400);
+        }
+
+        /* ================= UI ================= */
+        function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+        function memberPct(name) {
+            const mine = tasks.filter(t => t.member === name);
+            const done = mine.filter(t => t.status === "completed").length;
+            return { pct: mine.length ? Math.round(done / mine.length * 100) : 0, done, total: mine.length };
+        }
+
+        function render() {
+            // Week range: Monday → next Monday
+            const m1 = new Date(weekStart + "T00:00:00");
+            const m2 = new Date(nextMondayStr(weekStart) + "T00:00:00");
+            const fmt = d => d.toLocaleDateString("en-GB", { day: 'numeric', month: 'short' });
+            document.getElementById("weekRange").textContent = fmt(m1) + " (Mon) → " + fmt(m2) + " (Mon)";
+
+            // Rooms grid
+            const rooms = document.getElementById("rooms");
+            rooms.innerHTML = "";
+            MEMBERS.forEach(m => {
+                const s = memberPct(m.name);
+                const pending = s.total - s.done;
+                const card = document.createElement("div");
+                card.className = "room-card";
+                card.onclick = () => openRoom(m.name);
+                card.innerHTML = `
+      <div class="avatar" style="background:${m.color}">${m.name[0]}</div>
+      <h3>${m.name}</h3>
+      <div class="pending">${pending} pending task${pending === 1 ? "" : "s"}</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:${s.pct}%;background:${m.color}"></div></div>
+      <div class="mini-pct" style="color:${m.color}">${s.pct}% complete (${s.done}/${s.total})</div>
+      <div class="enter">Room kholne ke liye click karein →</div>`;
+                rooms.appendChild(card);
+            });
+
+            // Room view
+            if (currentRoom) {
+                const m = MEMBERS.find(x => x.name === currentRoom);
+                const s = memberPct(currentRoom);
+                const mine = tasks.filter(t => t.member === currentRoom && t.status === "pending");
+                const myDone = tasks.filter(t => t.member === currentRoom && t.status === "completed");
+                document.getElementById("roomAvatar").style.background = m.color;
+                document.getElementById("roomAvatar").textContent = currentRoom[0];
+                document.getElementById("roomName").textContent = currentRoom + " ka Room 🚪";
+                document.getElementById("roomSub").textContent = mine.length + " pending • " + myDone.length + " complete is week";
+                document.getElementById("roomPctText").textContent = s.done + " / " + s.total + " tasks";
+                const bar = document.getElementById("roomBar");
+                bar.style.width = s.pct + "%"; bar.textContent = s.pct + "%";
+
+                const list = document.getElementById("roomTasks");
+                list.innerHTML = "";
+                if (mine.length === 0) list.innerHTML = '<div class="empty">🎉 Koi pending task nahi — sab complete!</div>';
+                mine.forEach(t => {
+                    const el = document.createElement("div");
+                    el.className = "task";
+                    el.innerHTML = `${esc(t.text)}<small>Click karein jab complete ho jaye 👆</small>`;
+                    el.onclick = () => openModal(t.id);
+                    if (isAdmin) {
+                        const ed = document.createElement("button");
+                        ed.className = "mini"; ed.textContent = "✎";
+                        ed.onclick = (e) => { e.stopPropagation(); const nt = prompt("Task edit karein:", t.text); if (nt && nt.trim()) { t.text = nt.trim(); push(); } };
+                        el.appendChild(ed);
+                        const del = document.createElement("button");
+                        del.className = "mini"; del.textContent = "✕"; del.style.right = "32px";
+                        del.onclick = (e) => { e.stopPropagation(); if (confirm("Task delete karein?")) { tasks = tasks.filter(x => x.id !== t.id); push(); } };
+                        el.appendChild(del);
+                    }
+                    list.appendChild(el);
+                });
+                // Mere complete tasks bhi room mein dikhao
+                myDone.forEach(t => {
+                    const el = document.createElement("div");
+                    el.className = "task";
+                    el.style.borderColor = "#166534";
+                    el.style.background = "#052e16";
+                    el.style.cursor = "default";
+                    el.innerHTML = `<span style="color:#4ade80">✔ Complete:</span> ${esc(t.text)}<small style="color:#86efac">"${esc(t.doneMsg)}" — ${esc(t.doneAt)}</small>`;
+                    list.appendChild(el);
+                });
+            }
+
+            // Completed feed
+            const done = tasks.filter(t => t.status === "completed");
+            const sec = document.getElementById("doneSection");
+            if (done.length) {
+                sec.style.display = "block";
+                document.getElementById("doneList").innerHTML = done.map(t =>
+                    `<div class="done-item"><b>✔ ${esc(t.member)}:</b> ${esc(t.text)}<br><span class="msg">"${esc(t.doneMsg)}" — ${esc(t.doneAt)}</span></div>`
+                ).join("");
+            } else sec.style.display = "none";
+        }
+
+        /* ===== Room navigation ===== */
+        function openRoom(name) {
+            currentRoom = name;
+            document.getElementById("homeView").style.display = "none";
+            document.getElementById("roomView").style.display = "block";
+            document.getElementById("btnBack").style.display = "inline-block";
+            window.scrollTo(0, 0);
+            render();
+        }
+        function goHome() {
+            currentRoom = null;
+            document.getElementById("homeView").style.display = "block";
+            document.getElementById("roomView").style.display = "none";
+            document.getElementById("btnBack").style.display = "none";
+            render();
+        }
+
+        /* ================= Admin (bina password) ================= */
+        function toggleAdmin() {
+            isAdmin = !isAdmin;
+            document.getElementById("adminPanel").style.display = isAdmin ? "block" : "none";
+            document.getElementById("btnNewWeek").style.display = isAdmin ? "inline-block" : "none";
+            document.getElementById("btnAdmin").textContent = isAdmin ? "❌ Close" : "🛠️ Admin";
+            document.getElementById("btnAdmin").classList.toggle("on", isAdmin);
+            if (isAdmin) document.getElementById("teamLink").textContent = teamUrl();
+            render();
+        }
+
+        function addTask() {
+            const inp = document.getElementById("inpTask");
+            const text = inp.value.trim();
+            if (!text) { alert("Pehle task likhein!"); return; }
+            tasks.push({ id: Date.now(), member: document.getElementById("selMember").value, text, status: "pending", doneMsg: "", doneAt: "" });
+            inp.value = "";
+            push();
+        }
+
+        function newWeek() {
+            if (!isAdmin) return;
+            if (confirm("Naya week shuru karein? Sab tasks clear ho jayenge!")) { tasks = []; weekStart = currentMonday(); localStorage.setItem(LS_WEEK, weekStart); push(); }
+        }
+
+        function copyLink() {
+            const url = teamUrl();
+            (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(
+                () => alert("✅ Team link copy ho gaya! WhatsApp par bhej dein:\n\n" + url),
+                () => prompt("Ye link copy karke team ko bhejein:", url)
+            );
+        }
+
+        /* ================= Complete modal ================= */
+        function openModal(id) {
+            modalTaskId = id;
+            const t = tasks.find(x => x.id === id);
+            document.getElementById("modalTaskText").textContent = t.member + ": " + t.text;
+            document.getElementById("modalMsg").value = "";
+            document.getElementById("modal").style.display = "flex";
+        }
+        function closeModal() { document.getElementById("modal").style.display = "none"; modalTaskId = null; }
+        function submitComplete() {
+            const t = tasks.find(x => x.id === modalTaskId);
+            const msg = document.getElementById("modalMsg").value.trim() || "Ye task tha, maine complete kar liya hai ✅";
+            t.status = "completed";
+            t.doneMsg = msg;
+            t.doneAt = new Date().toLocaleString();
+            push(); closeModal();
+        }
+
+        /* ================= Start ================= */
+        render();
+        pull(false);
+        setInterval(() => { if (!modalTaskId) pull(false); }, 30000);
+    </script>
+</body>
+
+</html>
