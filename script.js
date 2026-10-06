@@ -1,16 +1,4 @@
-        const firebaseConfig = {
-            apiKey: "AIzaSyCsTrVR-aRxIRju_StLHOXdnOBK8Yzyu1E",
-            authDomain: "byn-avenue-data.firebaseapp.com",
-            projectId: "byn-avenue-data",
-            storageBucket: "byn-avenue-data.firebasestorage.app",
-            messagingSenderId: "1076216863590",
-            appId: "1:1076216863590:web:f7f3c4359f7519c0cfc6a7"
-        };
-        const USE_FIREBASE = firebaseConfig.apiKey.indexOf("YAHAN") === -1;
-        const DB_PATH = "team-tasks";
-        let db = null;
-
-        /* PASSWORDS */
+/* PASSWORDS */
         const PASSWORDS = {
             admin: "admin123",
             Bilal: "bilal123",
