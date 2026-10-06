@@ -1,4 +1,3 @@
-
 const firebaseConfig = {
     apiKey: "AIzaSyCsTrVR-aRxIRju_StLHOXdnOBK8Yzyu1E",
     authDomain: "byn-avenue-data.firebaseapp.com",
@@ -394,7 +393,6 @@ function submitComplete() {
     t.proof = pickedProof; /* screenshot — sab ko dikhega */
     push(); closeModal();
 }
-
 render();
 if (USE_FIREBASE) { startFirebase(); } else { startJsonBlob(); }
 
